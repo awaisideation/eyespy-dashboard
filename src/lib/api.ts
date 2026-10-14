@@ -3,7 +3,7 @@
 // they are not implemented. Never put secrets in frontend code.
 import type { DashboardSummary, IntegrationState } from "./types";
 
-export const API_BASE_URL: string = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
+export const API_BASE_URL: string = (import.meta.env["VITE_API_BASE_URL"] as string | undefined) ?? "";
 export const DEMO_MODE = !API_BASE_URL;
 
 export const ENDPOINTS = {
