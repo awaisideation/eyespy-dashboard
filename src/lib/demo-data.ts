@@ -3,7 +3,7 @@
 import type {
   AgeGroup, AlertCategory, AlertStatus, BagCheckEvent, BagCheckStatus, Camera, CameraPosition,
   CameraStatus, Channel, CustomerTrafficEvent, DeliveryEvent, DeliveryState, DetectionModule,
-  EmployeeEventType, EmployeeMonitoringEvent, FootfallBucket, NotificationRecord, SecurityAlert,
+  EmployeeEventType, EmployeeMonitoringEvent, FootfallBucket, NotificationRecord, ReviewStatus, SecurityAlert,
   Severity, Store,
 } from "./types";
 
@@ -130,10 +130,11 @@ const pickAge = (): AgeGroup => {
 export const customerEvents: CustomerTrafficEvent[] = Array.from({ length: 900 }, (_, i) => {
   const s = pick(stores);
   const ts = NOW - int(0, 7 * 24 * 60) * 60_000;
-  const type = (r() < 0.52 ? "Entry" : "Exit") as const;
+  const type: "Entry" | "Exit" = r() < 0.52 ? "Entry" : "Exit";
   const age = pickAge();
   const unavailable = age === "Unavailable";
   const g = r();
+  const gender: "Male" | "Female" | "Unavailable" = unavailable || g < 0.06 ? "Unavailable" : g < 0.52 ? "Female" : "Male";
   return {
     id: `ANON-${(100000 + i * 37).toString(36).toUpperCase()}`,
     ts,
@@ -141,7 +142,7 @@ export const customerEvents: CustomerTrafficEvent[] = Array.from({ length: 900 }
     cameraId: camOf(s.id, type === "Entry" ? "Entrance" : "Exit"),
     type,
     ageGroup: age,
-    gender: unavailable || g < 0.06 ? "Unavailable" : g < 0.52 ? "Female" : "Male",
+    gender,
     confidence: unavailable ? null : Math.round((0.55 + r() * 0.43) * 100) / 100,
     demo: true,
   };
@@ -197,7 +198,7 @@ export const employeeEvents: EmployeeMonitoringEvent[] = Array.from({ length: 42
     durationSec: dur,
     evidence: r() > 0.2,
     confidence: Math.round((0.6 + r() * 0.37) * 100) / 100,
-    status: type === "Apron Present" || type === "Checkout Activity Detected" ? "Reviewed" : r() < 0.45 ? "Pending Review" : pick(["Reviewed", "Dismissed"] as const),
+    status: (type === "Apron Present" || type === "Checkout Activity Detected" ? "Reviewed" : r() < 0.45 ? "Pending Review" : pick(["Reviewed", "Dismissed"] as const)) as ReviewStatus,
     notes: [],
     demo: true as const,
   };

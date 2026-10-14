@@ -126,7 +126,7 @@ function Overview() {
 
       <div className="mt-4 grid gap-4 xl:grid-cols-3">
         <Panel title="Latest alerts" desc="Most recent across selected stores" className="xl:col-span-2" bodyClass="p-0"
-          action={<Link to="/alerts" className="text-xs text-primary">View all</Link>}>
+          action={<Link to="/alerts" search={{ id: undefined } as never} className="text-xs text-primary">View all</Link>}>
           {recent.length === 0 ? <EmptyState /> : (
             <ul className="divide-y">
               {recent.map((x) => (
