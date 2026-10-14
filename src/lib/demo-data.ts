@@ -18,7 +18,7 @@ function rng(seed: number) {
   };
 }
 const r = rng(20261013);
-const pick = <T,>(a: readonly T[]) => a[Math.floor(r() * a.length)];
+const pick = <T,>(a: readonly T[]) => a[Math.floor(r() * a.length)]!;
 const int = (a: number, b: number) => Math.floor(a + r() * (b - a + 1));
 
 const HOUR = 3600_000;
@@ -106,7 +106,7 @@ for (let d = DAYS - 1; d >= 0; d--) {
     for (let h = open; h < close; h++) {
       const ts = day0 + h * HOUR;
       if (ts > NOW) continue;
-      const base = 38 * storeScale[si] * dowF * hourCurve[h];
+      const base = 38 * storeScale[si]! * dowF * hourCurve[h]!;
       const entries = Math.max(0, Math.round(base * (0.8 + r() * 0.4)));
       const exits = Math.max(0, Math.round(entries * (0.85 + r() * 0.25)));
       footfall.push({ storeId: s.id, ts, entries, exits });
@@ -116,21 +116,21 @@ for (let d = DAYS - 1; d >= 0; d--) {
 
 // Occupancy snapshot is modeled separately (not entries - exits over a range).
 export const occupancySnapshot: Record<string, { value: number; asOf: number; method: string }> = Object.fromEntries(
-  stores.map((s, i) => [s.id, { value: Math.round(10 + storeScale[i] * 30 + r() * 12), asOf: NOW - 2 * 60_000, method: "Demo snapshot model" }]),
+  stores.map((s, i) => [s.id, { value: Math.round(10 + storeScale[i]! * 30 + r() * 12), asOf: NOW - 2 * 60_000, method: "Demo snapshot model" }]),
 );
 
 export const AGE_GROUPS: AgeGroup[] = ["Child (0-12)", "Teen (13-17)", "18-24", "25-34", "35-49", "50-64", "65+", "Unavailable"];
 const AGE_W = [0.08, 0.07, 0.15, 0.22, 0.21, 0.13, 0.07, 0.07];
 const pickAge = (): AgeGroup => {
   let x = r();
-  for (let i = 0; i < AGE_W.length; i++) { x -= AGE_W[i]; if (x <= 0) return AGE_GROUPS[i]; }
+  for (let i = 0; i < AGE_W.length; i++) { x -= AGE_W[i]!; if (x <= 0) return AGE_GROUPS[i]!; }
   return "Unavailable";
 };
 
 export const customerEvents: CustomerTrafficEvent[] = Array.from({ length: 900 }, (_, i) => {
   const s = pick(stores);
   const ts = NOW - int(0, 7 * 24 * 60) * 60_000;
-  const type = r() < 0.52 ? "Entry" : "Exit";
+  const type = (r() < 0.52 ? "Entry" : "Exit") as const;
   const age = pickAge();
   const unavailable = age === "Unavailable";
   const g = r();
@@ -160,8 +160,8 @@ const ALERT_DEFS: { cat: AlertCategory; sev: Severity[]; pos: CameraPosition; de
 const ASTATUS: AlertStatus[] = ["New", "New", "New", "Acknowledged", "Under Review", "Resolved", "Resolved", "False Positive"];
 
 export const alerts: SecurityAlert[] = Array.from({ length: 64 }, (_, i) => {
-  const def = i < 7 ? ALERT_DEFS[i] : pick(ALERT_DEFS);
-  const s = i < 4 ? stores[0] : pick(stores);
+  const def = i < 7 ? ALERT_DEFS[i]! : pick(ALERT_DEFS);
+  const s = i < 4 ? stores[0]! : pick(stores);
   const status = i < 6 ? "New" : pick(ASTATUS);
   const ageMin = i < 10 ? int(3, 600) : int(30, 29 * 24 * 60);
   return {
